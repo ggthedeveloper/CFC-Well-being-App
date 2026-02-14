@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoodMate</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="style.css">
+<script src="script.js"></script>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="loginScreen" class="login-screen" style="display:none">
+  <div class="card login-box">
+    <div style="font-size:2.8rem;margin-bottom:12px">🧠</div>
+    <h1 class="login-title" id="loginTitle">MoodMate</h1>
+    <p class="login-sub" id="loginSub">Your personal emotional wellness companion.</p>
+
+    <div id="loginForm">
+      <input class="login-input" id="loginName" placeholder="Your name" autocomplete="off">
+      <div class="input-wrap">
+        <input class="login-input" id="loginPass" type="password" placeholder="Password">
+        <span class="pass-toggle" onclick="togglePass('loginPass',this)">👁</span>
+      </div>
+      <div class="input-error" id="loginError"></div>
+      <button class="login-btn" onclick="doLogin()">Sign In →</button>
+      <div class="login-switch">No account? <span onclick="showRegister()">Create one</span></div>
+    </div>
+
+    <div id="registerForm" style="display:none">
+      <input class="login-input" id="regName" placeholder="Your name" autocomplete="off">
+      <div class="input-wrap">
+        <input class="login-input" id="regPass" type="password" placeholder="Create password (min 4 chars)">
+        <span class="pass-toggle" onclick="togglePass('regPass',this)">👁</span>
+      </div>
+      <div class="input-wrap">
+        <input class="login-input" id="regPass2" type="password" placeholder="Confirm password">
+        <span class="pass-toggle" onclick="togglePass('regPass2',this)">👁</span>
+      </div>
+      <div class="input-error" id="regError"></div>
+      <button class="login-btn" onclick="doRegister()">Create Account →</button>
+      <div class="login-switch">Have an account? <span onclick="showLogin()">Sign In</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="appMain" style="display:none">
+<div class="app-wrapper">
+
+  <header class="card header">
+    <div class="logo"><div class="logo-dot"></div>MoodMate</div>
+    <div class="header-actions">
+      <div class="streak-badge" id="streakBadge">🔥 0</div>
+      <div class="user-chip"><div class="avatar" id="userAvatar">?</div><span id="userName">—</span></div>
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+      <button class="icon-btn" onclick="logout()" title="Log out">🚪</button>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- MOOD PICKER -->
+    <div class="card">
+      <div class="section-label">Today's Check-in</div>
+      <div class="section-title">How are you<br>feeling right now?</div>
+      <div class="mood-grid">
+        <button class="mood-btn" data-mood="happy"   onclick="pickMood('happy')"  ><span class="mood-emoji">😊</span>Happy</button>
+        <button class="mood-btn" data-mood="calm"    onclick="pickMood('calm')"   ><span class="mood-emoji">😌</span>Calm</button>
+        <button class="mood-btn" data-mood="sad"     onclick="pickMood('sad')"    ><span class="mood-emoji">😢</span>Sad</button>
+        <button class="mood-btn" data-mood="anxious" onclick="pickMood('anxious')"><span class="mood-emoji">😰</span>Anxious</button>
+        <button class="mood-btn" data-mood="lonely"  onclick="pickMood('lonely')" ><span class="mood-emoji">😔</span>Lonely</button>
+        <button class="mood-btn" data-mood="stressed"onclick="pickMood('stressed')"><span class="mood-emoji">😤</span>Stressed</button>
+      </div>
+      <div class="mood-feedback empty" id="moodFeedback">
+        <div class="feedback-title" id="feedbackTitle">Select a mood above</div>
+        <div class="feedback-msg"  id="feedbackMsg">to get personalised suggestions</div>
+        <ul class="suggestions-list" id="suggestionsList"></ul>
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="card">
+      <div class="section-label">Journal Entry</div>
+      <div class="section-title">What's on<br>your mind?</div>
+      <textarea class="journal-area" id="journalText" placeholder="Write freely… no judgment here."></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px">
+        <span style="font-size:.75rem;color:var(--text-muted)" id="journalWordCount">0 words</span>
+        <button class="save-btn" onclick="saveEntry()">Save entry ✦</button>
+      </div>
+      <div style="margin-top:20px">
+        <div class="section-label">This week</div>
+        <div class="heatmap-row" id="weeklyHeatmap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="bottom-row">
+    <div class="card stat-card"><div class="stat-num" id="statEntries">0</div><div class="stat-label">Total Entries</div></div>
+    <div class="card stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Day Streak 🔥</div></div>
+    <div class="card stat-card"><div class="stat-num" id="statTopMood">—</div><div class="stat-label">Most Frequent</div></div>
+  </div>
+
+  <!-- TOOLS + HISTORY -->
+  <div class="main-grid">
+    <div class="card">
+      <div class="section-label">Tools</div>
+      <div class="action-row">
+        <button class="action-btn" onclick="openModal('historyModal')">📋 History</button>
+        <button class="action-btn" onclick="openModal('chartModal')">📈 Analytics</button>
+        <button class="action-btn" onclick="openModal('chatModal')">🤖 AI Chat</button>
+        <button class="action-btn" onclick="openModal('musicModal')">🎵 Music</button>
+        <button class="action-btn" onclick="openModal('gamesModal')">🎮 Games</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">Recent Log</div>
+      <div id="recentHistory"><div class="empty-state">No entries yet. Log a mood to begin ✦</div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════ MODALS ══════════════ -->
+
+<!-- HISTORY -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">Mood History</span><button class="close-btn" onclick="closeModal('historyModal')">✕</button></div>
+    <div id="historyModalList"></div>
+  </div>
+</div>
+
+<!-- CHART -->
+<div class="modal-overlay" id="chartModal">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">Analytics</span><button class="close-btn" onclick="closeModal('chartModal')">✕</button></div>
+    <canvas id="moodChart"></canvas>
+    <div style="margin-top:18px;text-align:center;font-size:.8rem;color:var(--text-muted)">Based on your last 30 check-ins</div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="modal-overlay" id="chatModal">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">🤖 AI Companion</span><button class="close-btn" onclick="closeModal('chatModal')">✕</button></div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" placeholder="Talk to me…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MUSIC MODAL ══ -->
+<div class="modal-overlay" id="musicModal">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header"><span class="modal-title">🎵 Mood Music</span><button class="close-btn" onclick="closeModal('musicModal')">✕</button></div>
+    <div class="mood-tabs" id="musicMoodTabs"></div>
+    <div class="music-player">
+      <div class="music-header">
+        <div class="music-art" id="musicArt">🎵</div>
+        <div class="music-info">
+          <div class="music-title" id="musicTitle">Select a mood</div>
+          <div class="music-artist" id="musicArtist">MoodMate Radio</div>
+        </div>
+      </div>
+      <div class="music-controls">
+        <button class="music-btn" onclick="prevTrack()">⏮</button>
+        <button class="music-btn play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+        <button class="music-btn" onclick="nextTrack()">⏭</button>
+      </div>
+      <div class="music-progress">
+        <div class="progress-bar-wrap" onclick="seekMusic(event)"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="progress-times"><span id="timeElapsed">0:00</span><span id="timeDuration">0:00</span></div>
+      </div>
+      <div class="volume-row">🔈<input class="volume-slider" type="range" min="0" max="1" step="0.05" value="0.7" oninput="setVolume(this.value)">🔊</div>
+    </div>
+    <div class="section-label">Playlist</div>
+    <div class="playlist" id="musicPlaylist"></div>
+  </div>
+</div>
+
+<!-- ══ GAMES MODAL ══ -->
+<div class="modal-overlay" id="gamesModal">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header"><span class="modal-title">🎮 Mood Games</span><button class="close-btn" onclick="closeModal('gamesModal')">✕</button></div>
+    <div id="gamesHome">
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px">Games chosen for your current mood. Playing games reduces stress and boosts your mood! ✨</p>
+      <div class="games-grid" id="gamesGrid"></div>
+    </div>
+    <div id="gameArea" style="display:none">
+      <button class="action-btn" onclick="backToGames()" style="margin-bottom:16px;flex:none;width:auto">← Back</button>
+      <div id="gameContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</body>
+</html>
